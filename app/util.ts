@@ -90,9 +90,9 @@ export default class GameUtil {
         return [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT].filter((dir) => dir !== notAllowedDir);
     }
 
-    getRayLength( x: number, y: number, dir: Direction) {
+    getRayLength(x: number, y: number, dir: Direction) {
         let length = 0;
-        let move = {x, y};
+        let move = { x, y };
         do {
             move = this.getMoveResult(move.x, move.y, dir);
             const canStep: boolean = this.isCellSteppable(move.x, move.y)
@@ -104,21 +104,56 @@ export default class GameUtil {
         } while (true);
     }
 
+
+
     getWaveAreaSize(x: number, y: number) {
         const field = this.getField();
         field[x][y] = Infinity;
+        const point = this.getMyCoords();
 
-        const stack = [];
-        // Get all available cells for cells in a stack 
-        // Remove previous cells in a stack
-        // Put available to a stack
-        // Mark cells in a field as null
-        // areaSize += stack size
-        // For each cell in a stack -> line 112
+        const getAvailableNeigbors = ({ x, y }) => [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT]
+            .map(dir => this.getMoveResult(x, y, dir))
+            .filter(({ x, y }) => (this.isCellSteppable(x, y) && field[x][y] === 0))
+
+        let stack = [];
+        let areaSize = 0;
+
+        stack.push(point);
+
+        const waveSearch = (field) => {
+            // Get all available cells for cells in a stack 
+            const available = stack.flatMap(p => getAvailableNeigbors(p));
+            const serialized = available.map(({x, y}) => `${x.toString()}-${y.toString()}`)
+            
+            const set = new Set(serialized);
+
+            const filteredAvailable = [...set].map((s) => s.split('-').map(Number)).map(([x, y]) => ({x, y}));
+
+            // Remove previous cells in a stack
+            stack = [];
+
+            // Put available to a stack
+            stack = [...filteredAvailable];
+
+            // Mark cells in a field as null
+            stack.forEach(({ x, y }) => field[x][y] = null)
+            // areaSize += stack size
+            areaSize += stack.length;
+            if (areaSize > 100) {
+                return
+            }
+
+            // For each cell in a stack -> line 112
+            if (stack.length) {
+                return waveSearch(field)
+            }
+            
+        }
+        waveSearch(field);
         // When stack is empty - finish
 
-        return 0;
+        return areaSize;
     }
 
-    
+
 }

@@ -10,7 +10,7 @@ export function getNextMove(gameState: GameState) {
         return anyFreeNearbyStrategy(readonlyState);
     }
 
-    return largestAvailableAreaStrategy(readonlyState);
+    return longestRayStrategy(readonlyState);
 }
 
 type GameResponse = { direction: Direction, iteration: number };
@@ -70,8 +70,14 @@ const longestRayStrategy = (gameState: GameState): GameResponse => {
 const largestAvailableAreaStrategy = (gameState): GameResponse => {
 
     const util = new GameUtil(gameState);
-    const directions = util.getAvailableDirections();
     const myCoords = util.getMyCoords();
+
+    const directions = util.getAvailableDirections().filter(dir => {
+        const move = util.getMoveResult(myCoords.x, myCoords.y, dir);
+        return util.isCellSteppable(move.x, move.y);
+    });
+
+    
 
     const waves = directions.map((dir) => {
         const newCoords = util.getMoveResult(myCoords.x, myCoords.y, dir);
@@ -79,8 +85,10 @@ const largestAvailableAreaStrategy = (gameState): GameResponse => {
         return { dir, size }
     });
 
-    const preferredDir = waves.sort((a, b) => b.size - a.size)[0].dir;
-
+    const preferredDir = waves.sort((a, b) => a.size - b.size)[0]?.dir;
+    if (!preferredDir) {
+        return longestRayStrategy(gameState);
+    }
     if ((waves.reduce((sum, { size }) => sum + size, 0) / waves.length) === waves[0].size) {
         // Fallback to longest ray strategy in case if all moves give same free area size 
         return longestRayStrategy(gameState);
