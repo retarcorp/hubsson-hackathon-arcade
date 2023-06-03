@@ -35,6 +35,17 @@ export default class GameUtil {
         }
     }
 
+    isCellSteppable(x, y) {
+        const { width, height } = this.gameState;
+        const field = this.getField();
+
+        if (x < 0) return false;
+        if (x >= width) return false;
+        if (y < 0) return false;
+        if (y >= height) return false;
+        return field[x][y] === 0;
+    }
+
     getMyCoordsHistory() {
         const me = this.gameState.players.find((player: PlayerCoordinates) => player.playerId === config.id)
         return me.coordinates;
@@ -57,7 +68,7 @@ export default class GameUtil {
         const twoPointsEqual = (p1, p2) => (p1.x === p2.x) && (p1.y === p2.y)
 
         for (let dir of directions) {
-            if(twoPointsEqual(currentPoint, this.getMoveResult(prev.x, prev.y, dir))) {
+            if (twoPointsEqual(currentPoint, this.getMoveResult(prev.x, prev.y, dir))) {
                 return dir;
             }
         }
@@ -78,4 +89,36 @@ export default class GameUtil {
         const notAllowedDir = this.getOppositeDirection(myPrevDir);
         return [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT].filter((dir) => dir !== notAllowedDir);
     }
+
+    getRayLength( x: number, y: number, dir: Direction) {
+        let length = 0;
+        let move = {x, y};
+        do {
+            move = this.getMoveResult(move.x, move.y, dir);
+            const canStep: boolean = this.isCellSteppable(move.x, move.y)
+            if (canStep) {
+                length += 1;
+            } else {
+                return length;
+            }
+        } while (true);
+    }
+
+    getWaveAreaSize(x: number, y: number) {
+        const field = this.getField();
+        field[x][y] = Infinity;
+
+        const stack = [];
+        // Get all available cells for cells in a stack 
+        // Remove previous cells in a stack
+        // Put available to a stack
+        // Mark cells in a field as null
+        // areaSize += stack size
+        // For each cell in a stack -> line 112
+        // When stack is empty - finish
+
+        return 0;
+    }
+
+    
 }
