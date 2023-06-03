@@ -6,7 +6,7 @@ on:
       - release
 
 env:
-  TEAM_IMAGE: Denis_LT
+  TEAM_IMAGE: denis_lt
 
 jobs:
     build-and-deploy-client:
