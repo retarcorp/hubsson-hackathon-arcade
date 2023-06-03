@@ -2,6 +2,7 @@ import { GameState, Direction } from "../libs/model";
 import { GameClient } from "../libs/game-client";
 
 import { config } from "./config";
+import { getNextMove } from "./gameEngine";
 
 
 const gameClient = new GameClient(config);
@@ -11,8 +12,9 @@ gameClient.onGameStart((): void => {
 });
 
 gameClient.onGameUpdate((gameState: GameState): void => {
-	console.log("Game State received");
-	gameClient.sendAction(Direction.UP, gameState.iteration);
+	
+	const action = getNextMove(gameState);
+	gameClient.sendAction(action.direction, action.iteration);
 });
 
 gameClient.run();
